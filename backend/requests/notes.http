@@ -1,0 +1,27 @@
+### GET -> NOTE BY ID
+GET http://localhost:8080/notes/1 HTTP/1.1
+
+### GET -> ALL NOTES
+GET http://localhost:8080/notes HTTP/1.1
+
+### POST -> CREATE NOTE
+POST http://localhost:8080/notes/create HTTP/1.1
+Content-Type: application/json
+
+{ 
+  "title": "Test note", 
+  "content": "Some test content of this note just to test things out", 
+  "EventId": 1 
+}
+
+### PUT -> EDIT NOTE WITH ID
+PUT http://localhost:8080/notes/1/edit
+Content-Type: application/json
+
+{
+  "title": "Test note edited", 
+  "content": "Some test content of this note just to test things out after edit"
+}
+
+### DELETE -> NOTE BY ID
+DELETE http://localhost:8080/notes/1/delete HTTP/1.1

@@ -1,0 +1,40 @@
+### GET -> TEAM BY ID
+GET http://localhost:8080/teams/1 HTTP/1.1
+
+### GET -> ALL TEAMS
+GET http://localhost:8080/teams HTTP/1.1
+
+### POST -> CREATE TEAM
+POST http://localhost:8080/teams/create HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Team 3"
+}
+
+### PUT -> EDIT TEAM WITH ID
+PUT http://localhost:8080/teams/1/edit
+Content-Type: application/json
+
+{
+  "name": "Team 1"
+}
+
+### PUT -> ADD USER WITH USERID TO TEAM WITH TEAMID 
+PUT http://localhost:8080/teams/1/addUser
+Content-Type: application/json
+
+{
+  "UserId": 1
+}
+
+### PUT -> ADD USER WITH USERID TO TEAM WITH TEAMID 
+PUT http://localhost:8080/teams/1/removeUser
+Content-Type: application/json
+
+{
+  "UserId": 1
+}
+
+### DELETE -> TEAM BY ID
+DELETE http://localhost:8080/teams/1/delete HTTP/1.1

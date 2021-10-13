@@ -1,0 +1,45 @@
+### GET -> TASK BY ID
+GET http://localhost:8080/tasks/3 HTTP/1.1
+
+### GET -> ALL TASKS
+GET http://localhost:8080/tasks HTTP/1.1
+
+### POST -> CREATE TASK
+POST http://localhost:8080/tasks/create HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Task 1",
+  "date": "2021-09-10",
+  "priority": "low",
+  "EventId": 1,
+  "TeamId": 1
+}
+
+### PUT -> ADD USER WITH USERID TO TASK WITH TASKID 
+PUT http://localhost:8080/tasks/1/addUser
+Content-Type: application/json
+
+{
+  "UserId": 1
+}
+
+### PUT -> REMOVE USER WITH USERID TO TASK WITH TASKID 
+PUT http://localhost:8080/tasks/1/removeUser
+Content-Type: application/json
+
+{
+  "UserId": 1
+}
+
+
+### PUT -> EDIT TASK WITH ID
+PUT http://localhost:8080/tasks/3/edit
+Content-Type: application/json
+
+{
+  "TaskId": 3
+}
+
+### DELETE -> TASK BY ID
+DELETE http://localhost:3000/tasks/1/delete HTTP/1.1

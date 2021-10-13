@@ -1,0 +1,44 @@
+### GET -> EVENT BY ID
+GET http://localhost:8080/events/1 HTTP/1.1
+
+### GET -> ALL EVENTS
+GET http://localhost:8080/events HTTP/1.1
+
+### POST -> CREATE EVENT
+POST http://localhost:8080/events/create HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Event name 1",
+  "place": "Some location",
+  "date": "12-10-2021"
+}
+
+### PUT -> EDIT EVENT WITH ID
+PUT http://localhost:8080/events/2/edit
+Content-Type: application/json
+
+{
+  "name": "Event name",
+  "place": "Some location",
+  "date": "2021-09-05"
+}
+
+### PUT -> ADD TEAM WITH TEAMID TO EVENT WITH EVENTID 
+PUT http://localhost:8080/events/1/addTeam
+Content-Type: application/json
+
+{
+  "TeamId": 1
+}
+
+### PUT -> REMOVE TEAM WITH TEAMID FROM EVENT WITH EVENTID 
+PUT http://localhost:8080/events/1/removeTeam
+Content-Type: application/json
+
+{
+  "TeamId": 1
+}
+
+### DELETE -> EVENT BY ID
+DELETE http://localhost:8080/events/1/delete HTTP/1.1

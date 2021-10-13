@@ -1,0 +1,44 @@
+### GET -> USER BY ID
+GET http://localhost:8080/users/1 HTTP/1.1
+
+### GET -> ALL USERS
+GET http://localhost:8080/users HTTP/1.1
+
+
+### POST -> LOGIN USER
+POST http://localhost:8080/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "password"
+}
+
+### POST -> CREATE user
+POST http://localhost:8080/users/create HTTP/1.1
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "user1@test.com",
+  "phoneNumber": "+48000000002",
+  "password": "password",
+  "rolex": "User"
+}
+
+### PUT -> EDIT USER WITH ID
+PUT http://localhost:8080/users/1/edit
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "admin@test.com",
+  "phoneNumber": "+48000000001",
+  "password": "password",
+  "role": "Admin"
+}
+
+### DELETE -> USER BY ID
+DELETE http://localhost:8080/users/2/delete HTTP/1.1
