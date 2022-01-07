@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { UserContext } from "../../context/userContext";
 import { Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Typography} from '@material-ui/core';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/styles';
@@ -17,6 +18,9 @@ const useStyles = makeStyles({
 })
 
 export default function AddNoteModal({ eventData, refresh }) {
+
+  const userData = useContext(UserContext);
+
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -27,11 +31,14 @@ export default function AddNoteModal({ eventData, refresh }) {
     setOpen(false);
   };
 
-  const postUser = async () => {
+  const postNote = async () => {
     if(title && content){
       setError("")
       setIsLoading(true)
       axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
         method: 'post',
         url: `http://localhost:8080/notes/create`,
         data: {
@@ -112,7 +119,7 @@ export default function AddNoteModal({ eventData, refresh }) {
           isLoading ?
           <CircularProgress />
           :
-          <Button onClick={postUser} color="primary">
+          <Button onClick={postNote} color="primary">
             Add
           </Button>
           }

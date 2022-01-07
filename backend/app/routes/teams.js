@@ -1,12 +1,15 @@
 module.exports = function (fastify, opts, done) {
 
-  const { getTeam, getTeams, createTeam, editTeam, addUser, removeUser, deleteTeam } = require('../controlers/teams')(fastify);
-  const { confirmation } = require('../schema');
+  const { getTeam, getTeams, createTeam, editTeam, deleteTeam, addUser, removeUser, getTeamUsers } = require('../controlers/teams')(fastify);
+  const { headers, confirmation } = require('../schema');
   const { teamInfo, teamBody, teamObject } = require('../schema/teams');
+  const { userInfo } = require('../schema/users');
 
   const getTeamOpts = {
+    preHandler: fastify.auth,
     handler: getTeam,
     schema:{
+      headers,
       response:{
         200: teamObject
       }
@@ -14,8 +17,10 @@ module.exports = function (fastify, opts, done) {
   };
 
   const getTeamsOpts = {
+    preHandler: fastify.auth,
     handler: getTeams,
     schema:{
+      headers,
       response:{
         200: {
           type: 'array',
@@ -26,8 +31,10 @@ module.exports = function (fastify, opts, done) {
   };
 
   const createTeamOpts = {
+    preHandler: fastify.auth,
     handler: createTeam,
     schema: {
+      headers,
       body: teamBody,
       response:{
         201: teamInfo
@@ -36,18 +43,33 @@ module.exports = function (fastify, opts, done) {
   };
 
   const editTeamOpts = {
+    preHandler: fastify.auth,
     handler: editTeam,
     schema: {
+      headers,
       body: teamBody,
       response: {
         200: teamInfo
       }
     }
   }
+  
+  const deleteTeamOpts = {
+    preHandler: fastify.auth,
+    handler: deleteTeam,
+    schema: {
+      headers,
+      response: {
+        200: confirmation
+      }
+    }
+  }
 
   const addUserOpts ={
+    preHandler: fastify.auth,
     handler: addUser,
     schema: {
+      headers,
       body: {
         type: 'object',
         properties: {
@@ -61,8 +83,10 @@ module.exports = function (fastify, opts, done) {
   }
 
   const removeUserOpts ={
+    preHandler: fastify.auth,
     handler: removeUser,
     schema: {
+      headers,
       body: {
         type: 'object',
         properties: {
@@ -74,15 +98,20 @@ module.exports = function (fastify, opts, done) {
       }
     }
   }
-  
-  const deleteTeamOpts = {
-    handler: deleteTeam,
+
+  const getTeamUsersOpts = {
+    preHandler: fastify.auth,
+    handler: getTeamUsers,
     schema: {
+      headers,
       response: {
-        200: confirmation
+        200: {
+          type: 'array',
+          items: userInfo
+        }
       }
     }
-  } 
+  }
 
   fastify.get('/teams',  getTeamsOpts)
 
@@ -92,11 +121,13 @@ module.exports = function (fastify, opts, done) {
 
   fastify.put('/teams/:id/edit', editTeamOpts)
 
+  fastify.delete('/teams/:id/delete', deleteTeamOpts)
+
   fastify.put('/teams/:id/addUser', addUserOpts)
 
   fastify.put('/teams/:id/removeUser', removeUserOpts)
 
-  fastify.delete('/teams/:id/delete', deleteTeamOpts)
+  fastify.get('/teams/:id/getUsers', getTeamUsersOpts)
 
   done()
 }

@@ -7,9 +7,10 @@ GET http://localhost:8080/teams HTTP/1.1
 ### POST -> CREATE TEAM
 POST http://localhost:8080/teams/create HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB0ZXN0LmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY0MTIxNjI4MywiZXhwIjoxNjQxMjE3NDgzfQ.-_IVd4PpXZPo3HXSxjs1SkCFbof7eiU2GUBanNJ1o1w
 
 {
-  "name": "Team 3"
+  "name": "Team 2"
 }
 
 ### PUT -> EDIT TEAM WITH ID
@@ -21,8 +22,9 @@ Content-Type: application/json
 }
 
 ### PUT -> ADD USER WITH USERID TO TEAM WITH TEAMID 
-PUT http://localhost:8080/teams/1/addUser
+PUT http://localhost:8080/teams/2/addUser
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB0ZXN0LmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY0MTIxNTQ0OSwiZXhwIjoxNjQxMjE2NjQ5fQ.zg7lFkF77-O73HEE-pjw99jd4Exe4D8JB2jGG3-QSik
 
 {
   "UserId": 1
@@ -31,6 +33,7 @@ Content-Type: application/json
 ### PUT -> ADD USER WITH USERID TO TEAM WITH TEAMID 
 PUT http://localhost:8080/teams/1/removeUser
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB0ZXN0LmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY0MTIxNjI4MywiZXhwIjoxNjQxMjE3NDgzfQ.-_IVd4PpXZPo3HXSxjs1SkCFbof7eiU2GUBanNJ1o1w
 
 {
   "UserId": 1
@@ -38,3 +41,6 @@ Content-Type: application/json
 
 ### DELETE -> TEAM BY ID
 DELETE http://localhost:8080/teams/1/delete HTTP/1.1
+
+### GET -> ALL TEAM USERS
+GET http://localhost:8080/teams/2/getUsers HTTP/1.1

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { UserContext } from "../../context/userContext";
 import { Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, FormControl, InputLabel, Select, Typography } from '@material-ui/core';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/styles';
@@ -14,7 +15,18 @@ const useStyles = makeStyles({
 })
 
 export default function AddUserModal({ getAdminData }) {
+
+  const userData = useContext(UserContext)
+
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("User");
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -27,8 +39,11 @@ export default function AddUserModal({ getAdminData }) {
   const postUser = async () => {
     if(firstName && lastName && email && phoneNumber && password && role){
       setError("")
-      setIsLoading(true)
+      setIsLoaded(true)
       axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
         method: 'post',
         url: `http://localhost:8080/users/create`,
         data: {
@@ -39,49 +54,40 @@ export default function AddUserModal({ getAdminData }) {
           password
         }
       }).then( async (response) => {
-        setIsLoading(false)
+        setIsLoaded(false)
         handleClose()
         await getAdminData()
       }).catch(error => {
-        setIsLoading(false)
+        setIsLoaded(false)
         const errorPayload = error.response.data.message;
         if(errorPayload){
           setError(errorPayload);
         }
         else{
-          setError("Wystąpił problem z serwerem, spróbuj później");
+          setError("Unexpected server error, please try again later");
         }
       })
     }
     else{
-      setError("Wprowadź wartości do wszytskich pól");
+      setError("Enter values in all fields");
     }
   }
-
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("User");
 
   const classes = useStyles();
 
   return (
     <>
       <Button variant="contained" color="primary" onClick={handleClickOpen}>
-        + Dodaj użytkownika
+        +Add User
       </Button>
       <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Dodaj użytkownika</DialogTitle>
+        <DialogTitle id="form-dialog-title">Add user</DialogTitle>
         <DialogContent>
           <TextField
             className={classes.input}
             autoFocus
             id="firstName"
-            label="Imię"
+            label="First name"
             type="text"
             fullWidth
             value={firstName}
@@ -90,7 +96,7 @@ export default function AddUserModal({ getAdminData }) {
           <TextField
             className={classes.input}
             id="lastName"
-            label="Nazwisko"
+            label="Last name"
             type="text"
             fullWidth
             value={lastName}
@@ -108,7 +114,7 @@ export default function AddUserModal({ getAdminData }) {
           <TextField
             className={classes.input}
             id="phone"
-            label="Numer telefonu"
+            label="Phone number"
             type="text"
             fullWidth
             value={phoneNumber}
@@ -117,14 +123,14 @@ export default function AddUserModal({ getAdminData }) {
           <TextField
             className={classes.input}
             id="password"
-            label="Hasło"
+            label="Password"
             type="password"
             fullWidth
             value={password}
             onChange={ event => setPassword(event.currentTarget.value) }
           />
           <FormControl fullWidth>
-            <InputLabel htmlFor="role">Rola</InputLabel>
+            <InputLabel htmlFor="role">Role</InputLabel>
             <Select
               native
               value={role}
@@ -134,9 +140,9 @@ export default function AddUserModal({ getAdminData }) {
                 id: 'role',
               }}
             >
-              <option value={"Admin"}>Administrator</option>
-              <option value={"Leader"}>Lider</option>
-              <option value={"User"}>Użytkownik</option>
+              <option value={"Admin"}>Admin</option>
+              <option value={"Leader"}>Leader</option>
+              <option value={"User"}>User</option>
             </Select>
           </FormControl>
           {
@@ -150,14 +156,14 @@ export default function AddUserModal({ getAdminData }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Anuluj
+            Cancel
           </Button>
           {
-          isLoading ?
+          isLoaded ?
           <CircularProgress />
           :
           <Button onClick={postUser} color="primary">
-            Dodaj
+            Add
           </Button>
           }
         </DialogActions>

@@ -9,20 +9,15 @@ module.exports = function (fastify){
       include: [
         {
           model: fastify.db.models.User,
-          attributes: ['id', 'firstName', 'lastName', 'role']
+          attributes: ['id']
         },
         {
           model: fastify.db.models.Event,
-          attributes: ['id', 'name', 'date', 'place'],
-          include: [
-            {
-              model: fastify.db.models.Task,
-              attributes: ['id', 'name', 'date', 'priority', 'status'],
-              where: {
-                TeamId: id
-              }
-            }
-          ]
+          attributes: ['id']
+        },
+        {
+          model: fastify.db.models.Task,
+          attributes: ['id']
         }
       ]
     });
@@ -45,11 +40,15 @@ module.exports = function (fastify){
       include: [
         {
           model: fastify.db.models.User,
-          attributes: ['id', 'firstName', 'lastName', 'role']
+          attributes: ['id']
         },
         {
           model: fastify.db.models.Event,
-          attributes: ['id', 'name', 'date', 'place']
+          attributes: ['id']
+        },
+        {
+          model: fastify.db.models.Task,
+          attributes: ['id']
         }
       ]
     });
@@ -112,6 +111,31 @@ module.exports = function (fastify){
           "message": "Given name is already in use"
         })
       }
+    }
+    else{
+      reply.status(404).send({
+        "statusCode": 404,
+        "error": "Not found",
+        "message": "No team with given id"
+      })
+    }
+  };
+
+  const deleteTeam = async (request, reply) => {
+    const {id} = request.params;
+    const team = await fastify.db.models.Team.findOne({
+        where: {
+          id
+        }
+    });
+
+    if(team){
+      await team.destroy();
+
+      reply.send({
+          statusCode: 200,
+          message: `Team (id: ${id}) successfully deleted`
+      })
     }
     else{
       reply.status(404).send({
@@ -206,21 +230,23 @@ module.exports = function (fastify){
     }
   };
 
-  const deleteTeam = async (request, reply) => {
-    const {id} = request.params;
+  const getTeamUsers = async (request, reply) => {
+    const TeamId = request.params.id;
     const team = await fastify.db.models.Team.findOne({
-        where: {
-          id
+      where: {
+        id: TeamId
+      },
+      attributes: ['id', 'name'],
+      include: [
+        {
+          model: fastify.db.models.User,
+          attributes: ['id', 'firstName', 'lastName', 'phoneNumber', 'email', 'role']
         }
+      ]
     });
 
     if(team){
-      await team.destroy();
-
-      reply.send({
-          statusCode: 200,
-          message: `Team (id: ${id}) successfully deleted`
-      })
+      reply.send(team.Users);
     }
     else{
       reply.status(404).send({
@@ -229,15 +255,16 @@ module.exports = function (fastify){
         "message": "No team with given id"
       })
     }
-  };
+  }
 
   return {
     getTeam,
     getTeams,
     createTeam,
     editTeam,
+    deleteTeam,
     addUser,
     removeUser,
-    deleteTeam
+    getTeamUsers
   }
 }

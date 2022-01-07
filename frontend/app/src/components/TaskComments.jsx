@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Grid, Paper, TextField, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import Fab from '@material-ui/core/Fab';
 import SendIcon from '@material-ui/icons/Send';
+import axios from 'axios';
+import { useContext } from 'react';
+import { UserContext } from '../context/userContext';
 
 const useStyles = makeStyles({
   paperStyles: {
@@ -35,21 +38,44 @@ const useStyles = makeStyles({
   }
 });
 
-export default function TaskComments({ user, taskData }) {
+export default function TaskComments({ taskData, getTaskData }) {
   const classes = useStyles();
 
   const { Comments } = taskData;
 
+  const [content, setContent] = useState("")
+  const userData = useContext(UserContext);
+  
+  const handleSendComment = async () => {
+    try{
+      await axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
+        method: 'post',
+        url: `http://localhost:8080/comments/create`,
+        data: {
+          content,
+          UserId: userData.id,
+          TaskId: taskData.id
+        }
+      })
+      getTaskData()
+    }
+    catch(err){
+      console.error(err);
+    }
+  }
+
   const renderComment = comment => {
     
-    const author = user.id === comment.User.id ? "Ja" : `${comment.User.firstName} ${comment.User.lastName}`;
+    const author = userData.id === comment.User.id ? "Me" : `${comment.User.firstName} ${comment.User.lastName}`;
     const date = new Date(comment.date);
-    const monthName = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"] 
-    const dateString = `${date.getUTCDate()} ${monthName[date.getUTCMonth()]} ${date.getUTCFullYear()} o ${date.getUTCHours()}:${date.getUTCMinutes()}`;
-
+    const monthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "Octorber", "November", "December"]
+    const dateString = `${date.getUTCDate()} ${monthName[date.getUTCMonth()]} ${date.getUTCFullYear()} at ${date.getUTCHours()}:${date.getUTCMinutes()}`;
     return (
-      <Grid key={comment.id} item container alignItems="flex-start" justifyContent={user.id === comment.User.id ? "flex-end" : "flex-start"} xs={12}>
-        <Grid className={classes.commentBox} component={Paper} item container align={user.id === comment.User.id ? "right" : "left"} xs={7}>
+      <Grid key={comment.id} item container alignItems="flex-start" justifyContent={userData.id === comment.User.id ? "flex-end" : "flex-start"} xs={12}>
+        <Grid className={classes.commentBox} component={Paper} item container align={userData.id === comment.User.id ? "right" : "left"} xs={7}>
           <Grid className={classes.commentAuthor} item xs={12}>
             <Typography type="p" variant="body1">
               {author}
@@ -73,8 +99,8 @@ export default function TaskComments({ user, taskData }) {
   return (
   <Grid container className={classes.commentsBox}>
     <Paper className={classes.paperStyles}>
-      <Grid className={classes.gridContainer} container direction="column" justifyContent="space-between">
-        <Grid className={classes.commentsGrid} container direction="row">
+      <Grid className={classes.gridContainer} container direction="column" justifyContent="flex-start">
+        <Grid className={classes.commentsGrid} container direction="row" alignContent='flex-start'>
           { 
             Comments.length > 0 ?
             Comments.map( renderComment )
@@ -88,10 +114,10 @@ export default function TaskComments({ user, taskData }) {
         </Grid>
         <Grid item container className={classes.inputBox}>
           <Grid item xs={11}>
-            <TextField id="outlined-basic-email" label="Your comment" fullWidth />
+            <TextField id="outlined-basic-email" label="Your comment" fullWidth value={content} onChange={ e => setContent(e.currentTarget.value) }/>
           </Grid>
           <Grid item xs={1} align="right">
-            <Fab aria-label="add"><SendIcon /></Fab>
+            <Fab onClick={ handleSendComment } aria-label="add"><SendIcon /></Fab>
           </Grid>
         </Grid>
       </Grid>

@@ -36,6 +36,7 @@ services:
     tty: true
 
   mysql-db:
+    platform: linux/amd64
     image: mysql:5.7
     container_name: mysql-db
     environment:
@@ -61,5 +62,5 @@ services:
     links:
       - mysql-db
     ports:
-      - 80:80
+      - 81:80
     restart: always

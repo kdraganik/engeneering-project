@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
+import { UserContext } from "../context/userContext";
 import axios from "axios";
 import { Container, Grid, Card, CardContent, Typography, CircularProgress } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core"
-import UsersTable from '../components/UsersTable'
-import TeamsTable from "../components/TeamsTable";
-import EventsTable from "../components/EventsTable";
-import AddUserModal from "../components/AddUserModal";
-import AddTeamModal from "../components/AddTeamModal";
-import AddEventModal from "../components/AddEventModal";
+import UsersTable from '../components/tables/UsersTable'
+import TeamsTable from "../components/tables/TeamsTable";
+import EventsTable from "../components/tables/EventsTable";
+import AddUserModal from "../components/modals/AddUserModal";
+import AddTeamModal from "../components/modals/AddTeamModal";
+import AddEventModal from "../components/modals/AddEventModal";
+
 
 const useStyles = makeStyles({
   container:{
@@ -34,41 +36,55 @@ const useStyles = makeStyles({
 
 export default function Admin({ user, setTitle }){
 
-  const updateTitle = () => setTitle("Panel administratora");
-  useEffect( updateTitle );
+  const userData = useContext(UserContext)
 
-  const classes = useStyles()
   const [isLoaded, setIsLoaded] = useState(false);
   const [users, setUsers] = useState({});
   const [teams, setTeams] = useState({});
   const [events, setEvents] = useState({});
 
-  const getAdminData = async () => {
-    const userResponse = await axios({
-      method: 'get',
-      url: `http://localhost:8080/users`
-    }).catch(error => console.error(error))
-    setUsers(userResponse.data);
-    
-    const teamResponse = await axios({
-      method: 'get',
-      url: `http://localhost:8080/teams`
-    }).catch(error => console.error(error))
-    setTeams(teamResponse.data)
+  const getAdminData = useCallback( async () => {
+    try{
+      setIsLoaded(false)
+      const userResponse = await axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
+        method: 'get',
+        url: `http://localhost:8080/users`
+      }).catch(error => console.error(error))
+      setUsers(userResponse.data);
+      
+      const teamResponse = await axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
+        method: 'get',
+        url: `http://localhost:8080/teams`
+      }).catch(error => console.error(error))
+      setTeams(teamResponse.data)
 
-    const eventResponse = await axios({
-      method: 'get',
-      url: `http://localhost:8080/events`
-    }).catch(error => console.error(error))
-    setEvents(eventResponse.data)
-
-    setIsLoaded(true)
-  };
+      const eventResponse = await axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
+        method: 'get',
+        url: `http://localhost:8080/events`
+      }).catch(error => console.error(error))
+      setEvents(eventResponse.data)
+      setIsLoaded(true)
+    }
+    catch(err){
+      console.error(err);
+    }
+  }, [userData])
 
   useEffect(() => {
+    setTitle("Admin panel");
     getAdminData();
-  }, [])
+  }, [getAdminData, setTitle])
 
+  const classes = useStyles()
   return(
     <Container className={classes.container} maxWidth="xl">
       {
@@ -84,11 +100,11 @@ export default function Admin({ user, setTitle }){
                 <CardContent>
                   <Grid className={classes.gridTop} container direction="row" alignItems="center" justifyContent="space-between">
                     <Typography component="h2" variant="h5">
-                      Użytkownicy
+                      Users
                     </Typography>
                     <AddUserModal getAdminData={ getAdminData }/>
                   </Grid>
-                  <UsersTable user={ user } users={ users } refresh={getAdminData}/>
+                  <UsersTable users={ users } refresh={getAdminData}/>
                 </CardContent>
               </div>
             </Card>
@@ -99,11 +115,11 @@ export default function Admin({ user, setTitle }){
                 <CardContent>
                   <Grid className={classes.gridTop} container direction="row" alignItems="center" justifyContent="space-between">
                     <Typography component="h2" variant="h5">
-                      Zespoły
+                      Teams
                     </Typography>
                     <AddTeamModal getAdminData={ getAdminData }/>
                   </Grid>
-                  <TeamsTable teams={ teams } users={ users } refresh={getAdminData}/>
+                  <TeamsTable teams={ teams } users={ users } refresh={ getAdminData }/>
                 </CardContent>
               </div>
             </Card>
@@ -114,11 +130,11 @@ export default function Admin({ user, setTitle }){
                 <CardContent>
                   <Grid className={classes.gridTop} container direction="row" alignItems="center" justifyContent="space-between">
                     <Typography component="h2" variant="h5">
-                      Wydarzenia
+                      Events
                     </Typography>
-                    <AddEventModal getAdminData={getAdminData} />
+                    <AddEventModal refresh={ getAdminData } />
                   </Grid>
-                  <EventsTable events={ events } teams={ teams } refresh={getAdminData}/>
+                  <EventsTable events={ events } teams={ teams } refresh={ getAdminData }/>
                 </CardContent>
               </div>
             </Card>

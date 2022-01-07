@@ -2,16 +2,10 @@ module.exports = function(fastify){
   const getNote = async (request, reply) => {
     const {id} = request.params;
     const note = await fastify.db.models.Note.findOne({
-        attributes: ['title', 'content'],
-        where: {
-          id
-        },
-        includes: [
-          {
-            model: fastify.db.models.Event,
-            attributes: ['id']
-          }
-        ]
+      where: {
+        id
+      },
+      attributes: ['id', 'title', 'content', 'EventId']
     });
 
     if(note){
@@ -28,13 +22,7 @@ module.exports = function(fastify){
 
   const getNotes = async (request, reply) => {
     const notes = await fastify.db.models.Note.findAll({
-      attributes: ['title', 'content'],
-      includes: [
-        {
-          model: fastify.db.models.Event,
-          attributes: ['id']
-        }
-      ]
+      attributes: ['id', 'title', 'content', 'EventId'],
     });
     
     reply.send(notes);

@@ -11,7 +11,7 @@ Content-Type: application/json
 {
   "content": "Some test comment",
   "UserId": 1,
-  "TaskId": 3
+  "TaskId": 2
 }
 
 ### PUT -> EDIT COMMENT WITH ID

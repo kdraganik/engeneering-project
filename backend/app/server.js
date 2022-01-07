@@ -38,6 +38,14 @@ fastify.register(require('./models'));
 
 fastify.register(require('fastify-jwt'), { secret: process.env.JWT_SECRET });
 
+fastify.decorate("auth", async (request, reply) => {
+  try {
+    await request.jwtVerify()
+  } catch (err) {
+    reply.send(err)
+  }
+})
+
 fastify.register(require('fastify-swagger'), {
   exposeRoute: true,
   routePrefix: '/docs',
@@ -55,7 +63,7 @@ fastify.register(require('./routes/notes'));
 
 // Run the server!
 const PORT = process.env.PORT || 8080;
-fastify.listen(PORT, function (err, address) { //, "0.0.0.0"
+fastify.listen(PORT, "0.0.0.0", function (err, address) { //, "0.0.0.0"
   if (err) {
     fastify.log.error(err)
     process.exit(1)

@@ -4,32 +4,24 @@ module.exports = function(fastify){
   const getTask = async (request, reply) => {
     const {id} = request.params;
     const task = await fastify.db.models.Task.findOne({
-        attributes: ['name', 'status', 'date', 'priority', 'TaskId', 'EventId', 'TeamId'],
-        where: {
-          id
+      where: {
+        id
+      },
+      attributes: ['id', 'name', 'description', 'status', 'date', 'priority', 'TaskId', 'EventId', 'TeamId'],
+      include: [
+        {
+          model: fastify.db.models.Task,
+          attributes: ['id']
         },
-        include: [
-          {
-            model: fastify.db.models.Task,
-            attributes: ['id', 'name', 'status', 'date', 'priority']
-          },
-          {
-            model: fastify.db.models.Comment,
-            attributes: ['id', 'content', 'date'],
-            include: [
-              {
-                model: fastify.db.models.User,
-                attributes: ['id', 'firstName', 'lastName']
-              }
-            ],
-          }
-        ],
-        order: [
-          [
-            {model: fastify.db.models.Comment}, 
-            'date'
-          ]
-        ],
+        {
+          model: fastify.db.models.Comment,
+          attributes: ['id']
+        },
+        {
+          model: fastify.db.models.User,
+          attributes: ['id']
+        },
+      ]
     });
 
     if(task){
@@ -46,17 +38,20 @@ module.exports = function(fastify){
 
   const getTasks = async (request, reply) => {
     const tasks = await fastify.db.models.Task.findAll({
-      attributes: ['name', 'date', 'priority', 'TaskId', 'TeamId', 'EventId'],
+      attributes: ['id', 'name', 'description', 'status', 'date', 'priority', 'TaskId', 'EventId', 'TeamId'],
       include: [
         {
-          model: fastify.db.models.Task
+          model: fastify.db.models.Task,
+          attributes: ['id']
         },
         {
-          model: fastify.db.models.Comment
+          model: fastify.db.models.Comment,
+          attributes: ['id']
         },
         {
-          model: fastify.db.models.User
-        }
+          model: fastify.db.models.User,
+          attributes: ['id']
+        },
       ]
     });
     
@@ -64,11 +59,12 @@ module.exports = function(fastify){
   };
 
   const createTask = async (request, reply) => {
-    const { name, date, priority, EventId, TeamId, TaskId } = request.body;
+    const { name, date, description, priority, EventId, TeamId, TaskId } = request.body;
     
     const newTask = await fastify.db.models.Task.create({
       name,
       date,
+      description,
       priority,
       EventId,
       TeamId,
@@ -87,18 +83,43 @@ module.exports = function(fastify){
     })
 
     if(task){
-      const { name, status, date, priority, isSubtask, TaskId, TeamId} = request.body;
+      const { name, status, description, date, priority, TaskId, TeamId} = request.body;
 
       task.name = name || task.name;
+      task.description = description || task.description;
       task.status = status || task.status;
       task.date = date || task.date;
       task.priority = priority || task.priority;
-      task.isSubtask = isSubtask || task.isSubtask;
       task.TaskId = TaskId || task.TaskId;
-      task.TeamId = TeamId || task.TeamId;
+      task.TeamId = TeamId === 0 ? null : TeamId || task.TeamId;
       await task.save();
 
       reply.send(task);
+    }
+    else{
+      reply.status(404).send({
+        "statusCode": 404,
+        "error": "Not found",
+        "message": "No task with given id"
+      })
+    }
+  };
+
+  const deleteTask = async (request, reply) => {
+    const {id} = request.params;
+    const task = await fastify.db.models.Task.findOne({
+        where: {
+          id
+        }
+    });
+
+    if(task){
+      await task.destroy();
+
+      reply.send({
+          statusCode: 200,
+          message: `Task with id: ${id} removed successfully`
+      })
     }
     else{
       reply.status(404).send({
@@ -193,38 +214,13 @@ module.exports = function(fastify){
     }
   };
 
-  const deleteTask = async (request, reply) => {
-    const {id} = request.params;
-    const task = await fastify.db.models.Task.findOne({
-        where: {
-          id
-        }
-    });
-
-    if(task){
-      await task.destroy();
-
-      reply.send({
-          statusCode: 200,
-          message: `Task with id: ${id} removed successfully`
-      })
-    }
-    else{
-      reply.status(404).send({
-        "statusCode": 404,
-        "error": "Not found",
-        "message": "No task with given id"
-      })
-    }
-  }
-
   return { 
     getTask, 
     getTasks, 
     createTask, 
     editTask,
+    deleteTask,
     addUser,
-    removeUser,
-    deleteTask 
+    removeUser 
   }
 }

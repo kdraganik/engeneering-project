@@ -8,7 +8,7 @@ module.exports = function (fastify){
             allowNull: false
         },
         description: {
-          type: DataTypes.STRING
+            type: DataTypes.STRING
         },
         status: {
             type: DataTypes.ENUM("to do", "in progress", "done"),

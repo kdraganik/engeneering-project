@@ -1,12 +1,14 @@
 module.exports = function (fastify, opts, done) {
 
-  const { getEvent, getEvents, createEvent, editEvent, addTeam, removeTeam, deleteEvent } = require('../controlers/events')(fastify);
-  const { confirmation } = require('../schema');
+  const { getEvent, getEvents, createEvent, editEvent, deleteEvent, addTeam, removeTeam } = require('../controlers/events')(fastify);
+  const { headers, confirmation } = require('../schema');
   const { eventInfo, eventBody, eventObject } = require('../schema/events');
 
   const getEventOpts = {
+    preHandler: fastify.auth,
     handler: getEvent,
     schema:{
+      headers,
       response:{
         200: eventObject
       }
@@ -14,8 +16,10 @@ module.exports = function (fastify, opts, done) {
   };
 
   const getEventsOpts = {
+    preHandler: fastify.auth,
     handler: getEvents,
     schema:{
+      headers,
       response:{
         200: {
           type: 'array',
@@ -26,8 +30,10 @@ module.exports = function (fastify, opts, done) {
   };
 
   const createEventOpts = {
+    preHandler: fastify.auth,
     handler: createEvent,
     schema: {
+      headers,
       body: eventBody,
       response:{
         201: eventInfo
@@ -36,8 +42,10 @@ module.exports = function (fastify, opts, done) {
   };
 
   const editEventOpts = {
+    preHandler: fastify.auth,
     handler: editEvent,
     schema: {
+      headers,
       body: eventBody,
       response: {
         200: eventInfo
@@ -45,9 +53,22 @@ module.exports = function (fastify, opts, done) {
     }
   }
 
+  const deleteEventOpts = {
+    preHandler: fastify.auth,
+    handler: deleteEvent,
+    schema: {
+      headers,
+      response: {
+        200: confirmation
+      }
+    }
+  }
+
   const addTeamOpts ={
+    preHandler: fastify.auth,
     handler: addTeam,
     schema: {
+      headers,
       body: {
         type: 'object',
         properties: {
@@ -61,8 +82,10 @@ module.exports = function (fastify, opts, done) {
   }
 
   const removeTeamOpts ={
+    preHandler: fastify.auth,
     handler: removeTeam,
     schema: {
+      headers,
       body: {
         type: 'object',
         properties: {
@@ -74,15 +97,6 @@ module.exports = function (fastify, opts, done) {
       }
     }
   }
-  
-  const deleteEventOpts = {
-    handler: deleteEvent,
-    schema: {
-      response: {
-        200: confirmation
-      }
-    }
-  } 
 
   fastify.get('/events/:id', getEventOpts)
   
@@ -92,11 +106,11 @@ module.exports = function (fastify, opts, done) {
 
   fastify.put('/events/:id/edit', editEventOpts)
 
+  fastify.delete('/events/:id/delete', deleteEventOpts)
+
   fastify.put('/events/:id/addTeam', addTeamOpts)
 
   fastify.put('/events/:id/removeTeam', removeTeamOpts)
-
-  fastify.delete('/events/:id/delete', deleteEventOpts)
 
   done()
 }

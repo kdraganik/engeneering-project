@@ -11,7 +11,7 @@ Content-Type: application/json
 
 {
   "email": "admin@test.com",
-  "password": "password"
+  "password": "testpassword"
 }
 
 ### POST -> CREATE user
@@ -42,3 +42,10 @@ Content-Type: application/json
 
 ### DELETE -> USER BY ID
 DELETE http://localhost:8080/users/2/delete HTTP/1.1
+
+### GET -> OVERDUE TASKS OF USER WITH ID
+GET http://localhost:8080/users/1/overdueTasks HTTP/1.1
+
+### GET -> OVERDUE TASKS OF USER WITH ID
+GET http://localhost:8080/users/1/getEvents HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB0ZXN0LmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY0MTIxODA0NiwiZXhwIjoxNjQxMjE5MjQ2fQ.zU1gUh6U9cUlxAQAgs4VArlhUcTk1E6V162XH7tLSCg

@@ -1,12 +1,4 @@
 module.exports = {
-  noteInfo: {
-    type: 'object',
-    properties: {
-      id: { type: 'integer' },
-      title: { type: 'string' },
-      content: { type: 'string' },
-    }
-  },
   noteBody: {
     type: 'object',
     properties: {
@@ -15,13 +7,13 @@ module.exports = {
       EventId: { type: 'integer' }
     }
   },
-  noteObject: {
+  noteInfo: {
     type: 'object',
     properties: {
       id: { type: 'integer' },
       title: { type: 'string' },
       content: { type: 'string' },
-      Event: { type: 'array', items: { type: 'object' } }
+      EventId: { type: 'integer' }
     }
-  },
+  }
 }

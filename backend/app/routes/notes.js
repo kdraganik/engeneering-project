@@ -1,33 +1,39 @@
 module.exports = function (fastify, opts, done) {
 
   const { getNote, getNotes, createNote, editNote, deleteNote } = require('../controlers/notes')(fastify);
-  const { confirmation } = require('../schema');
-  const { noteInfo, noteObject, noteBody } = require('../schema/notes');
+  const { headers, confirmation } = require('../schema');
+  const { noteInfo, noteBody } = require('../schema/notes'); 
   
   const getNoteOpts = {
+    preHandler: fastify.auth,
     handler: getNote,
     schema:{
+      headers,
       response:{
-        200: noteObject
+        200: noteInfo
       }
     }
   };
 
   const getNotesOpts = {
+    preHandler: fastify.auth,
     handler: getNotes,
     schema:{
+      headers,
       response:{
         200: {
           type: 'array',
-          items: noteObject
+          items: noteInfo
         }
       }
     }
   };
 
   const createNoteOpts = {
+    preHandler: fastify.auth,
     handler: createNote,
     schema: {
+      headers,
       body: noteBody,
       response:{
         201: noteInfo
@@ -36,8 +42,10 @@ module.exports = function (fastify, opts, done) {
   };
 
   const editNoteOpts = {
+    preHandler: fastify.auth,
     handler: editNote,
     schema: {
+      headers,
       body: noteBody,
       response: {
         200: noteInfo
@@ -46,8 +54,10 @@ module.exports = function (fastify, opts, done) {
   }
   
   const deleteNoteOpts = {
+    preHandler: fastify.auth,
     handler: deleteNote,
     schema: {
+      headers,
       response: {
         200: confirmation
       }

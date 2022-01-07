@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { UserContext } from "../../context/userContext";
 import { Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, FormControl, InputLabel, Select, Typography } from '@material-ui/core';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/styles';
@@ -13,8 +14,19 @@ const useStyles = makeStyles({
   }
 })
 
-export default function EditUserModal({ label, data, refresh }) {
+export default function EditUserModal({ label, editedUserData, refresh }) {
+
+  const userData = useContext(UserContext)
+
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [firstName, setFirstName] = useState(editedUserData.firstName);
+  const [lastName, setLastName] = useState(editedUserData.lastName);
+  const [email, setEmail] = useState(editedUserData.email);
+  const [phoneNumber, setPhoneNumber] = useState(editedUserData.phoneNumber);
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState(editedUserData.role);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -27,45 +39,40 @@ export default function EditUserModal({ label, data, refresh }) {
   const putUser = async () => {
     if(firstName && lastName && email && phoneNumber && role){
       setError("")
-      setIsLoading(true)
+      setIsLoaded(true)
       axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
         method: 'put',
-        url: `http://localhost:8080/users/${data.id}/edit`,
+        url: `http://localhost:8080/users/${editedUserData.id}/edit`,
         data: {
           firstName,
           lastName,
           email,
           phoneNumber,
-          password
+          password,
+          role
         }
       }).then( async (response) => {
-        setIsLoading(false)
+        setIsLoaded(false)
         handleClose()
         await refresh()
       }).catch(error => {
-        setIsLoading(false)
+        setIsLoaded(false)
         const errorPayload = error.response.data.message;
         if(errorPayload){
           setError(errorPayload);
         }
         else{
-          setError("Wystąpił problem z serwerem, spróbuj później");
+          setError("Unexpected server error, please try again later");
         }
       })
     }
     else{
-      setError("Wprowadź wartości do wszytskich pól");
+      setError("Enter values in all fields");
     }
   }
-
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [firstName, setFirstName] = useState(data.firstName);
-  const [lastName, setLastName] = useState(data.lastName);
-  const [email, setEmail] = useState(data.email);
-  const [phoneNumber, setPhoneNumber] = useState(data.phoneNumber);
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState(data.role);
 
   const classes = useStyles();
 
@@ -75,13 +82,13 @@ export default function EditUserModal({ label, data, refresh }) {
         { label }
       </Button>
       <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Dodaj użytkownika</DialogTitle>
+        <DialogTitle id="form-dialog-title">Edit user</DialogTitle>
         <DialogContent>
           <TextField
             className={classes.input}
             autoFocus
             id="firstName"
-            label="Imię"
+            label="First name"
             type="text"
             fullWidth
             value={firstName}
@@ -90,7 +97,7 @@ export default function EditUserModal({ label, data, refresh }) {
           <TextField
             className={classes.input}
             id="lastName"
-            label="Nazwisko"
+            label="Last name"
             type="text"
             fullWidth
             value={lastName}
@@ -108,7 +115,7 @@ export default function EditUserModal({ label, data, refresh }) {
           <TextField
             className={classes.input}
             id="phone"
-            label="Numer telefonu"
+            label="Phone number"
             type="text"
             fullWidth
             value={phoneNumber}
@@ -117,14 +124,14 @@ export default function EditUserModal({ label, data, refresh }) {
           <TextField
             className={classes.input}
             id="password"
-            label="Hasło"
+            label="Password"
             type="password"
             fullWidth
             value={password}
             onChange={ event => setPassword(event.currentTarget.value) }
           />
           <FormControl fullWidth>
-            <InputLabel htmlFor="role">Age</InputLabel>
+            <InputLabel htmlFor="role">Role</InputLabel>
             <Select
               native
               value={role}
@@ -134,9 +141,9 @@ export default function EditUserModal({ label, data, refresh }) {
                 id: 'role',
               }}
             >
-              <option value={"Admin"}>Administrator</option>
-              <option value={"Lider"}>Lider</option>
-              <option value={"User"}>Użytkownik</option>
+              <option value={"Admin"}>Admin</option>
+              <option value={"Leader"}>Leader</option>
+              <option value={"User"}>User</option>
             </Select>
           </FormControl>
           {
@@ -150,14 +157,14 @@ export default function EditUserModal({ label, data, refresh }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Anuluj
+            Cancel
           </Button>
           {
-          isLoading ?
+          isLoaded ?
           <CircularProgress />
           :
           <Button onClick={putUser} color="primary">
-            Zapisz
+            Save
           </Button>
           }
         </DialogActions>

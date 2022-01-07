@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const { Op } = require("sequelize");
 
 module.exports = function (fastify){
   const login = async (request, reply) => {
@@ -20,7 +21,7 @@ module.exports = function (fastify){
     }
 
     const {id, role} = user;
-    const token = fastify.jwt.sign({id, email, role}, {expiresIn: "1200s"});
+    const token = fastify.jwt.sign({id, email, role}, {expiresIn: "12000s"});
     const expiryDate = new Date();
     expiryDate.setMinutes(expiryDate.getMinutes() + 20);
     reply.send({
@@ -41,38 +42,42 @@ module.exports = function (fastify){
         include: [
           {
             model: fastify.db.models.Team,
-            attributes: ['id', 'name']
+            attributes: ['id']
+          },
+          {
+            model: fastify.db.models.Task,
+            attributes: ['id']
           }
         ]
     });
 
     if(user){
-      const teamIds = user.Teams.map(team => team.id);
+      // const teamIds = user.Teams.map(team => team.id);
 
-      const userEvents = await fastify.db.models.Event.findAll({
-        attributes: ['id', 'name', 'place', 'date'],
-        include: [
-          {
-            model: fastify.db.models.Team,
-            attributes: ['id', 'name'],
-            where: {
-              id: teamIds
-            },
-          },
-          {
-            model: fastify.db.models.Task,
-            attributes: ['id', 'name', 'status', 'priority', 'date'],
-            include: [
-              {
-                model: fastify.db.models.User,
-                attributes: ['id', 'firstName', 'lastName']
-              }
-            ]
-          }
-        ]
-      })
+      // const userEvents = await fastify.db.models.Event.findAll({
+      //   attributes: ['id', 'name', 'place', 'date'],
+      //   include: [
+      //     {
+      //       model: fastify.db.models.Team,
+      //       attributes: ['id', 'name'],
+      //       where: {
+      //         id: teamIds
+      //       },
+      //     },
+      //     {
+      //       model: fastify.db.models.Task,
+      //       attributes: ['id', 'name', 'status', 'priority', 'date'],
+      //       include: [
+      //         {
+      //           model: fastify.db.models.User,
+      //           attributes: ['id', 'firstName', 'lastName']
+      //         }
+      //       ]
+      //     }
+      //   ]
+      // })
 
-      user.dataValues.Events = userEvents
+      // user.dataValues.Events = userEvents
 
       reply.send(user);
     }
@@ -96,42 +101,44 @@ module.exports = function (fastify){
       ]
     });
 
-    const getData = async () => {
-      return Promise.all(users.map( async user => {
-      const teamIds = user.Teams.map(team => team.id);
+    // const getData = async () => {
+    //   return Promise.all(users.map( async user => {
+    //   const teamIds = user.Teams.map(team => team.id);
 
-      const userEvents = await fastify.db.models.Event.findAll({
-        attributes: ['id', 'name', 'place', 'date'],
-        include: [
-          {
-            model: fastify.db.models.Team,
-            attributes: ['id', 'name'],
-            where: {
-              id: teamIds
-            },
-          },
-          {
-            model: fastify.db.models.Task,
-            attributes: ['id', 'name', 'status', 'priority', 'date'],
-            include: [
-              {
-                model: fastify.db.models.User,
-                attributes: ['id', 'firstName', 'lastName']
-              }
-            ]
-          }
-        ]
-      })
+    //   const userEvents = await fastify.db.models.Event.findAll({
+    //     attributes: ['id', 'name', 'place', 'date'],
+    //     include: [
+    //       {
+    //         model: fastify.db.models.Team,
+    //         attributes: ['id', 'name'],
+    //         where: {
+    //           id: teamIds
+    //         },
+    //       },
+    //       {
+    //         model: fastify.db.models.Task,
+    //         attributes: ['id', 'name', 'status', 'priority', 'date'],
+    //         include: [
+    //           {
+    //             model: fastify.db.models.User,
+    //             attributes: ['id', 'firstName', 'lastName']
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   })
 
-      return({
-        ...user.dataValues,
-        Events: userEvents
-      });
-    }))}
+    //   return({
+    //     ...user.dataValues,
+    //     Events: userEvents
+    //   });
+    // }))}
 
-    const usersWithEvents = await getData();
+    // const usersWithEvents = await getData();
     
-    reply.send(usersWithEvents);
+    // reply.send(usersWithEvents);
+
+    reply.send(users);
   };
 
   const createUser = async (request, reply) => {
@@ -214,7 +221,7 @@ module.exports = function (fastify){
           if(password){
               user.hashedPassword = bcrypt.hashSync(password, 12);
           }
-          user.role = role ||user.role
+          user.role = role || user.role
           await user.save();
 
           reply.send(user);
@@ -269,12 +276,105 @@ module.exports = function (fastify){
     }
   };
 
+  const getOverdueTasks = async (request, reply) => {
+    const {id} = request.params;
+    const query = await fastify.db.models.User.findOne({
+      where:{
+        id
+      },
+      include: [
+        {
+          model: fastify.db.models.Task,
+          attributes: ['id', 'name', 'status', 'date', 'priority', 'TaskId', 'EventId', 'TeamId'],
+          where:{
+            date:{
+              [Op.lt]: new Date()
+            },
+            status: ["to do", "in progress"]
+          }
+        } 
+      ]
+    })
+    if(query){
+      reply.send(query.Tasks)
+    }
+    else{
+      reply.send([])
+    }
+  }
+
+  const getEvents = async (request, reply) => {
+    const {id} =  request.params;
+    const userQuery = await fastify.db.models.User.findOne({
+      where:{
+        id
+      },
+      include: [
+        {
+          model: fastify.db.models.Team,
+          include: [
+            {
+              model: fastify.db.models.Event,
+              attributes: ['id']
+            },
+          ]
+        }
+      ]
+    })
+
+    if(userQuery){
+      const eventsSet = new Set()
+      userQuery.Teams.forEach( team => {
+        team.Events.forEach( event => {
+          eventsSet.add(event.id)
+        })
+      })
+  
+      const eventsIds = Array.from(eventsSet);
+      const events = await fastify.db.models.Event.findAll({
+        where: {
+          id: eventsIds
+        },
+        attributes: ['id', 'name', 'place', 'date'],
+        include: [
+          {
+            model: fastify.db.models.Note,
+            attributes: ['id']
+          },
+          {
+            model: fastify.db.models.Task,
+            attributes: ['id']
+          },
+          {
+            model: fastify.db.models.Team,
+            attributes: ['id']
+          }
+        ]
+      });
+      if(events){
+        reply.send(events);
+      }
+      else{
+        reply.send([]);
+      }
+    }
+    else{
+      reply.status(404).send({
+        "statusCode": 404,
+        "error": "Not found",
+        "message": "No event with given id"
+      })
+    }
+  }
+
   return {
     login,
     getUser,
     getUsers,
     createUser,
     editUser,
-    deleteUser
+    deleteUser,
+    getOverdueTasks,
+    getEvents
   }
 }

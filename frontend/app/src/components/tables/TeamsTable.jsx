@@ -2,7 +2,9 @@ import { DataGrid } from '@material-ui/data-grid';
 import { Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
 import axios from 'axios';
-import EditTeamModal from '../components/EditTeamModal';
+import EditTeamModal from '../modals/EditTeamModal';
+import { useContext } from 'react';
+import { UserContext } from '../../context/userContext';
 
 
 const useStyles = makeStyles({
@@ -15,30 +17,35 @@ const useStyles = makeStyles({
 });
 
 export default function TeamsTable({ teams, users, refresh }) {
+
+  const userData = useContext(UserContext)
   
   const columns = [
     {
       field: 'name',
-      headerName: 'Nazwa',
+      headerName: 'Name',
       flex: 1
     },
     {
-      field: 'edit',
-      headerName: 'Edytuj',
+      field: 'actionEdit',
+      headerName: 'Edit',
       width: 150,
       renderCell: (params) => {
         return (
-          <EditTeamModal label={"Edytuj"} refresh={refresh} users={ users } data={params.row} />
+          <EditTeamModal label={"Edit"} teamData={params.row} refresh={refresh} />
         );
       },
     },
     {
-      field: 'delete',
-      headerName: 'Usuń',
+      field: 'actionDelete',
+      headerName: 'Delete',
       width: 150,
       renderCell: (params) => {
         const onClick = () => {
           axios({
+            headers: {
+              Authorization: `Bearer ${userData.token}`
+            },
             method: 'delete',
             url: `http://localhost:8080/teams/${params.row.id}/delete`
           }).then( async (response) => {
@@ -46,7 +53,7 @@ export default function TeamsTable({ teams, users, refresh }) {
           }).catch(error => console.error(error))
         }
         return (
-          <Button style={{color: "red"}} onClick={onClick}>Usuń</Button>
+          <Button style={{color: "red"}} onClick={onClick}>Delete</Button>
         );
       },
     }

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { UserContext } from "../../context/userContext";
 import { Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Typography } from '@material-ui/core';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/styles';
-import TeamMembersTable from './TeamMembersTable';
+import TeamMembersTable from '../tables/TeamMembersTable';
 
 const useStyles = makeStyles({
   input: {
@@ -14,8 +15,14 @@ const useStyles = makeStyles({
   }
 })
 
-export default function EditTeamModal({ label, data, users,  refresh }) {
+export default function EditTeamModal({ label, teamData, refresh }) {
+
+  const userData = useContext(UserContext)
+  
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [name, setName] = useState(teamData.name);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -28,60 +35,56 @@ export default function EditTeamModal({ label, data, users,  refresh }) {
   const putTeam = async () => {
     if(name){
       setError("")
-      setIsLoading(true)
+      setIsLoaded(true)
       axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
         method: 'put',
-        url: `http://localhost:8080/teams/${data.id}/edit`,
+        url: `http://localhost:8080/teams/${teamData.id}/edit`,
         data: {
           name
         }
       }).then( async (response) => {
-        setIsLoading(false)
+        setIsLoaded(false)
         handleClose()
         await refresh()
       }).catch(error => {
-        setIsLoading(false)
+        setIsLoaded(false)
         const errorPayload = error.response.data.message;
         if(errorPayload){
           setError(errorPayload);
         }
         else{
-          setError("Wystąpił problem z serwerem, spróbuj później");
+          setError("Unexpected server error, please try again later");
         }
       })
     }
     else{
-      setError("Wprowadź wartości do wszytskich pól");
+      setError("Enter values in all fields");
     }
   }
 
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [name, setName] = useState(data.name);
-
-  const teamUserIds = data.users.map(user => user.id);
-
   const classes = useStyles();
-
   return (
     <>
       <Button variant="contained" color="primary" onClick={handleClickOpen}>
         { label }
       </Button>
       <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Dodaj użytkownika</DialogTitle>
+        <DialogTitle id="form-dialog-title">Edit team</DialogTitle>
         <DialogContent>
           <TextField
             className={classes.input}
             autoFocus
             id="name"
-            label="Nazwa"
+            label="Name"
             type="text"
             fullWidth
             value={name}
             onChange={ event => setName(event.currentTarget.value) }
           />
-          <TeamMembersTable users={ users } team={ data } teamUserIds={ teamUserIds } refresh={ refresh } />
+          <TeamMembersTable teamData={ teamData }/>
           {
             error ?
             <Typography className={classes.error} component="p" variant="body1" align="center">
@@ -93,14 +96,14 @@ export default function EditTeamModal({ label, data, users,  refresh }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Anuluj
+            Cancel
           </Button>
           {
-          isLoading ?
+          isLoaded ?
           <CircularProgress />
           :
           <Button onClick={putTeam} color="primary">
-            Zapisz
+            Save
           </Button>
           }
         </DialogActions>

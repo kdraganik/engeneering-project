@@ -1,8 +1,10 @@
 import { DataGrid } from '@material-ui/data-grid';
 import { Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
-import EditUserModal from '../components/EditUserModal'
+import EditUserModal from '../modals/EditUserModal'
 import axios from 'axios';
+import { useContext } from 'react';
+import { UserContext } from '../../context/userContext';
 
 const useStyles = makeStyles({
   tableContainer:{ 
@@ -13,58 +15,63 @@ const useStyles = makeStyles({
   }
 });
 
-export default function UsersTable({ user, users, refresh }) {
+export default function UsersTable({ users, refresh }) {
+
+  const userData = useContext(UserContext)
   
   const columns = [
     {
       field: 'firstName',
-      headerName: 'Imię',
+      headerName: 'First name',
       flex: 1
     },
     {
         field: 'lastName',
-        headerName: 'Nazwisko',
+        headerName: 'Last name',
         flex: 1
     },
     {
       field: 'phoneNumber',
-      headerName: 'Numer telefonu',
+      headerName: 'Phone number',
       flex: 1
     },
     {
       field: 'email',
-      headerName: 'Adres e-mail',
+      headerName: 'Email',
       flex: 1
     },
     {
       field: 'role',
-      headerName: 'Rola',
+      headerName: 'Role',
       flex: 1
     },
     {
-      field: 'edit',
-      headerName: 'Edytuj',
+      field: 'editAction',
+      headerName: 'Edit',
       width: 150,
       renderCell: (params) => {
         return (
-          <EditUserModal label={"Edytuj"} refresh={refresh} data={params.row} />
+          <EditUserModal label={"Edit"} refresh={refresh} editedUserData={params.row} />
         );
       },
     },
     {
       field: 'delete',
-      headerName: 'Usuń',
+      headerName: 'Delete',
       width: 150,
       renderCell: (params) => {
         const onClick = () => {
           axios({
+            headers: {
+              Authorization: `Bearer ${userData.token}`
+            },
             method: 'delete',
             url: `http://localhost:8080/users/${params.row.id}/delete`
           }).then( async (response) => {
             await refresh()
           }).catch(error => console.error(error))
         }
-        return params.row.id !== user.id ? <Button style={{color: "red"}} onClick={onClick}>Usuń</Button> : "";
+        return params.row.id !== userData.id ? <Button style={{color: "red"}} onClick={onClick}>Delete</Button> : "";
       },
     }
   ];

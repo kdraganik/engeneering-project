@@ -2,34 +2,24 @@ module.exports = function (fastify){
   const getEvent = async (request, reply) => {
     const {id} = request.params;
     const event = await fastify.db.models.Event.findOne({
-        attributes: ['id', 'name', 'place', 'date'],
-        where: {
-          id
+      where: {
+        id
+      },
+      attributes: ['id', 'name', 'place', 'date'],
+      include: [
+        {
+          model: fastify.db.models.Note,
+          attributes: ['id']
         },
-        include: [
-          {
-            model: fastify.db.models.Note
-          },
-          {
-            model: fastify.db.models.Task,
-            include: [
-              {
-                model: fastify.db.models.User
-              },
-              {
-                model: fastify.db.models.Team
-              }
-            ]
-          },
-          {
-            model: fastify.db.models.Team,
-            include: [
-              {
-                model: fastify.db.models.User
-              }
-            ]
-          }
-        ]
+        {
+          model: fastify.db.models.Task,
+          attributes: ['id']
+        },
+        {
+          model: fastify.db.models.Team,
+          attributes: ['id']
+        }
+      ]
     });
 
     if(event){
@@ -49,26 +39,16 @@ module.exports = function (fastify){
       attributes: ['id', 'name', 'place', 'date'],
       include: [
         {
-          model: fastify.db.models.Note
+          model: fastify.db.models.Note,
+          attributes: ['id']
         },
         {
           model: fastify.db.models.Task,
-          include: [
-            {
-              model: fastify.db.models.User
-            },
-            {
-              model: fastify.db.models.Team
-            }
-          ]
+          attributes: ['id']
         },
         {
           model: fastify.db.models.Team,
-          include: [
-            {
-              model: fastify.db.models.User
-            }
-          ]
+          attributes: ['id']
         }
       ]
     });
@@ -135,6 +115,31 @@ module.exports = function (fastify){
           "message": "Given name is already in use"
         })
       }
+    }
+    else{
+      reply.status(404).send({
+        "statusCode": 404,
+        "error": "Not found",
+        "message": "No event with given id"
+      })
+    }
+  };
+
+  const deleteEvent = async (request, reply) => {
+    const {id} = request.params;
+    const event = await fastify.db.models.Event.findOne({
+        where: {
+          id
+        }
+    });
+
+    if(event){
+      await event.destroy();
+
+      reply.send({
+          statusCode: 200,
+          message: `Event (id: ${id}) removed successfully`
+      })
     }
     else{
       reply.status(404).send({
@@ -229,38 +234,13 @@ module.exports = function (fastify){
     }
   };
 
-  const deleteEvent = async (request, reply) => {
-    const {id} = request.params;
-    const event = await fastify.db.models.Event.findOne({
-        where: {
-          id
-        }
-    });
-
-    if(event){
-      await event.destroy();
-
-      reply.send({
-          statusCode: 200,
-          message: `Event (id: ${id}) removed successfully`
-      })
-    }
-    else{
-      reply.status(404).send({
-        "statusCode": 404,
-        "error": "Not found",
-        "message": "No event with given id"
-      })
-    }
-  };
-
   return { 
     getEvent, 
     getEvents, 
     createEvent, 
     editEvent,
+    deleteEvent,
     addTeam,
-    removeTeam,
-    deleteEvent 
+    removeTeam 
   };
 }

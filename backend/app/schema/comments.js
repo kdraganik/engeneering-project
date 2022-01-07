@@ -1,12 +1,4 @@
 module.exports = {
-  commentInfo: {
-    type: 'object',
-    properties: {
-      id: { type: 'integer' },
-      content: { type: 'string' },
-      date: { type: 'string' }
-    }
-  },
   commentBody: {
     type: 'object',
     properties: {
@@ -15,14 +7,14 @@ module.exports = {
       UserId: { type: 'integer' }
     }
   },
-  commentObject: {
+  commentInfo: {
     type: 'object',
     properties: {
       id: { type: 'integer' },
       content: { type: 'string' },
       date: { type: 'string' },
-      Task: { type: 'object' },
-      User: { type: 'object' }
+      TaskId: { type: 'integer' },
+      UserId: { type: 'integer' }
     }
-  },
+  }
 }

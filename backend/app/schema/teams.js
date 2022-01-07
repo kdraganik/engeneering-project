@@ -1,14 +1,14 @@
 module.exports = {
+  teamBody: {
+    type: 'object',
+    properties: {
+      name: { type: 'string' }
+    }
+  },
   teamInfo: {
     type: 'object',
     properties: {
       id: { type: 'integer' },
-      name: { type: 'string' }
-    }
-  },
-  teamBody: {
-    type: 'object',
-    properties: {
       name: { type: 'string' }
     }
   },
@@ -17,8 +17,33 @@ module.exports = {
     properties: {
       id: { type: 'integer' },
       name: { type: 'string' },
-      Users: { type: 'array', items: { type: 'object' } },
-      Events: { type: 'array', items: { type: 'object' } }
+      Users: { 
+        type: 'array', 
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' }
+          }
+        } 
+      },
+      Events: { 
+        type: 'array', 
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' }
+          }
+        } 
+      },
+      Tasks: { 
+        type: 'array', 
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' }
+          }
+        } 
+      }
     }
   },
 }

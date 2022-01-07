@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useContext } from "react";
+import { UserContext } from "../../context/userContext";
 import { Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Typography } from '@material-ui/core';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/styles';
@@ -13,8 +14,18 @@ const useStyles = makeStyles({
   }
 })
 
-export default function AddEventModal({ getAdminData }) {
+export default function AddEventModal({ refresh }) {
+
+  const userData = useContext(UserContext)
+
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [name, setName] = useState("");
+  const [place, setPlace] = useState("");
+  const currDate = new Date()
+  currDate.setMinutes(currDate.getMinutes() - currDate.getTimezoneOffset())
+  const [date, setDate] = useState(currDate.toISOString().slice(0, -8));
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -26,9 +37,12 @@ export default function AddEventModal({ getAdminData }) {
 
   const postEvent = async () => {
     if(name && place && date){
-    setIsLoading(true)
+    setIsLoaded(true)
       setError("");
       axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
         method: 'post',
         url: `http://localhost:8080/events/create`,
         data: {
@@ -36,47 +50,40 @@ export default function AddEventModal({ getAdminData }) {
           place,
           date
         }
-      }).then( async (response) => {
-        setIsLoading(false)
-        handleClose()
-        await getAdminData()
+      }).then((response) => {
+        setIsLoaded(false)
+        refresh()
       }).catch(error => {
-        setIsLoading(false)
+        setIsLoaded(false)
         const errorPayload = error.response.data.message;
         if(errorPayload){
           setError(errorPayload);
         }
         else{
-          setError("Wystąpił problem z serwerem, spróbuj później");
+          setError("Unexpected server error, please try again later");
         }
       })
     }
     else{
-      setError("Wprowadź wartości do wszytskich pól");
+      setError("Enter values in all fields");
     }
   }
-
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [name, setName] = useState("");
-  const [place, setPlace] = useState("");
-  const [date, setDate] = useState(null);
 
   const classes = useStyles();
 
   return (
     <>
       <Button variant="contained" color="primary" onClick={handleClickOpen}>
-        + Dodaj wydarzenie
+        +Add Event
       </Button>
       <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Dodaj wydarzenie</DialogTitle>
+        <DialogTitle id="form-dialog-title">New Event</DialogTitle>
         <DialogContent>
           <TextField
             className={classes.input}
             autoFocus
             id="name"
-            label="Nazwa wydarzenia"
+            label="Name"
             type="text"
             fullWidth
             value={name}
@@ -85,7 +92,7 @@ export default function AddEventModal({ getAdminData }) {
           <TextField
             className={classes.input}
             id="place"
-            label="Miejsce"
+            label="Place"
             type="text"
             fullWidth
             value={place}
@@ -94,7 +101,7 @@ export default function AddEventModal({ getAdminData }) {
           <TextField
             className={classes.input}
             id="date"
-            label=" "
+            label="Date"
             type="datetime-local"
             fullWidth
             value={date}
@@ -111,14 +118,14 @@ export default function AddEventModal({ getAdminData }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Anuluj
+            Cancel
           </Button>
           {
-          isLoading ?
+          isLoaded ?
           <CircularProgress />
           :
           <Button onClick={postEvent} color="primary">
-            Dodaj
+            Add
           </Button>
           }
         </DialogActions>

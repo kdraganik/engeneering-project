@@ -1,33 +1,39 @@
 module.exports = function (fastify, opts, done) {
 
   const { getComment, getComments, createComment, editComment, deleteComment } = require('../controlers/comments')(fastify);
-  const { confirmation } = require('../schema');
-  const { commentInfo, commentObject, commentBody } = require('../schema/comments');
+  const { headers, confirmation } = require('../schema');
+  const { commentInfo, commentBody } = require('../schema/comments');
   
   const getCommentOpts = {
+    preHandler: fastify.auth,
     handler: getComment,
     schema:{
+      headers,
       response:{
-        200: commentObject
+        200: commentInfo
       }
     }
   };
 
   const getCommentsOpts = {
+    preHandler: fastify.auth,
     handler: getComments,
     schema:{
+      headers,
       response:{
         200: {
           type: 'array',
-          items: commentObject
+          items: commentInfo
         }
       }
     }
   };
 
   const createCommentOpts = {
+    preHandler: fastify.auth,
     handler: createComment,
     schema: {
+      headers,
       body: commentBody,
       response:{
         201: commentInfo
@@ -36,8 +42,10 @@ module.exports = function (fastify, opts, done) {
   };
 
   const editCommentOpts = {
+    preHandler: fastify.auth,
     handler: editComment,
     schema: {
+      headers,
       body: commentBody,
       response: {
         200: commentInfo
@@ -46,8 +54,10 @@ module.exports = function (fastify, opts, done) {
   }
   
   const deleteCommentOpts = {
+    preHandler: fastify.auth,
     handler: deleteComment,
     schema: {
+      headers,
       response: {
         200: confirmation
       }

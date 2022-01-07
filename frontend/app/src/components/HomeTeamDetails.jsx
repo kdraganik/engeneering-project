@@ -1,7 +1,6 @@
 import  { Grid, Paper, Card, CardContent, Typography } from '@material-ui/core';
 import { makeStyles } from "@material-ui/core";
 import TaskTable from './tables/TaskTable';
-import { Link } from 'react-router-dom'
 import { useContext, useState, useEffect, useCallback } from 'react';
 import { UserContext } from '../context/userContext';
 import axios from 'axios';
@@ -33,20 +32,16 @@ const useStyles = makeStyles({
   }
 });
 
-export default function HomeEventDetails({ eventData }){
+export default function HomeTeamDetails({ teamData }){
 
   const userData = useContext(UserContext);
 
-  const { name, place } = eventData;
-  const parsedDate = new Date(eventData.date);
-  const monthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "Octorber", "November", "December"] 
-  const dateString = `${monthName[parsedDate.getUTCMonth()]} ${parsedDate.getUTCDate()} ${parsedDate.getUTCFullYear()}`;
-  const timeString = `${parsedDate.getUTCHours()}:${(parsedDate.getMinutes()<10?'0':'') + parsedDate.getMinutes()}`;
+  const { name } = teamData;
 
   const [tasksData, setTasksData] = useState([])
   
   const getTasksData = useCallback(async () => {
-    eventData.Tasks = await Promise.all(eventData.Tasks.map(async task => {
+    teamData.Tasks = await Promise.all(teamData.Tasks.map(async task => {
       const taskResponse =  await axios({
         headers: {
           Authorization: `Bearer ${userData.token}`
@@ -56,8 +51,8 @@ export default function HomeEventDetails({ eventData }){
       })
       return taskResponse.data;
     }))
-    setTasksData(eventData.Tasks.filter(task => task.Users.some(user => user.id === userData.id)))
-  }, [userData, eventData])
+    setTasksData(teamData.Tasks.filter(task => task.Users.some(user => user.id === userData.id)))
+  }, [userData, teamData])
 
   useEffect(() => {
     getTasksData()
@@ -70,21 +65,16 @@ export default function HomeEventDetails({ eventData }){
       <Card className={classes.card}>
         <div className={classes.cardDetails}>
           <CardContent>
-            <Link className={classes.link} to={`event/${ eventData.id }`}>
-              <Typography component="h2" variant="h5">
-                {name}
-              </Typography>
-              <Typography className={classes.eventDetails} variant="subtitle1">
-                {place}, {dateString} @ {timeString}
-              </Typography>
-            </Link>
+            <Typography component="h2" variant="h5">
+              {name}
+            </Typography>
             {
               tasksData.length > 0 ? 
               <TaskTable tasks={ tasksData }/> 
               : 
               <Paper className={classes.paperStyles}>
                 <Typography type="p" variant="body1">
-                  You don't have assigned tasks in this event
+                  You don't have assigned tasks in this team
                 </Typography>
               </Paper>
             }

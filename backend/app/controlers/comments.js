@@ -2,20 +2,10 @@ module.exports = function(fastify){
   const getComment = async (request, reply) => {
     const {id} = request.params;
     const comment = await fastify.db.models.Comment.findOne({
-      attributes: ['content', 'date'],
       where: {
         id
       },
-      include: [
-        {
-          model: fastify.db.models.User,
-          attributes: ['firstName', 'lastName', 'role']
-        },
-        {
-          model: fastify.db.models.Task,
-          attributes: ['id']
-        }
-      ]
+      attributes: ['id', 'content', 'date', 'TaskId', 'UserId']
     });
 
     if(comment){
@@ -32,17 +22,7 @@ module.exports = function(fastify){
 
   const getComments = async (request, reply) => {
     const comments = await fastify.db.models.Comment.findAll({
-      attributes: ['content', 'date'],
-      include: [
-        {
-          model: fastify.db.models.User,
-          attributes: ['firstName', 'lastName', 'role']
-        },
-        {
-          model: fastify.db.models.Task,
-          attributes: ['id']
-        }
-      ]
+      attributes: ['id', 'content', 'date', 'TaskId', 'UserId']
     });
     
     reply.send(comments);
