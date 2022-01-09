@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import { UserContext } from "../context/userContext";
 import axios from "axios";
 import { Container, Grid, CircularProgress, Card, CardContent, Typography, Paper, Button} from '@material-ui/core';
@@ -89,7 +89,7 @@ export default function Home({ setTitle }){
   const [eventsData, setEventsData] = useState([]);
   const [teamsData, setTeamsData] = useState([]);
 
-  useEffect(async () => {
+  const getHomeData = useCallback(async () => {
     try{
       setIsLoaded(false);
       const userResponse = await axios({
@@ -144,7 +144,11 @@ export default function Home({ setTitle }){
     catch(err){
       console.error(err);
     }
-  }, [userData]);
+  }, [userData])
+
+  useEffect(() => {
+    getHomeData()
+  }, [getHomeData])
 
   const classes = useStyles();
 
