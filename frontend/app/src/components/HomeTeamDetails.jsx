@@ -49,6 +49,14 @@ export default function HomeTeamDetails({ teamData }){
         method: 'get',
         url: `http://localhost:8080/tasks/${task.id}`
       })
+      const responseEvent =  await axios({
+        headers: {
+          Authorization: `Bearer ${userData.token}`
+        },
+        method: 'get',
+        url: `http://localhost:8080/events/${taskResponse.data.EventId}`
+      })
+      taskResponse.data.event = responseEvent.data;
       return taskResponse.data;
     }))
     setTasksData(teamData.Tasks.filter(task => task.Users.some(user => user.id === userData.id)))
@@ -66,11 +74,11 @@ export default function HomeTeamDetails({ teamData }){
         <div className={classes.cardDetails}>
           <CardContent>
             <Typography component="h2" variant="h5">
-              {name}
+              Team: {name}
             </Typography>
             {
               tasksData.length > 0 ? 
-              <TaskTable tasks={ tasksData }/> 
+              <TaskTable tasks={ tasksData } showEvent={true}/> 
               : 
               <Paper className={classes.paperStyles}>
                 <Typography type="p" variant="body1">

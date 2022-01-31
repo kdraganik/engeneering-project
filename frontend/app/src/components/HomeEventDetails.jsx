@@ -72,7 +72,7 @@ export default function HomeEventDetails({ eventData }){
           <CardContent>
             <Link className={classes.link} to={`event/${ eventData.id }`}>
               <Typography component="h2" variant="h5">
-                {name}
+                Event: {name}
               </Typography>
               <Typography className={classes.eventDetails} variant="subtitle1">
                 {place}, {dateString} @ {timeString}

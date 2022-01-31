@@ -1,6 +1,7 @@
 FROM node:16
 
 WORKDIR /home/app
-USER node
+ADD start.sh /
+RUN chmod +x /start.sh
 
-ENTRYPOINT /bin/bash
+CMD ["/start.sh"]

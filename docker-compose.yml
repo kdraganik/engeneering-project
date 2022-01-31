@@ -6,6 +6,7 @@ services:
     container_name: react-client
     environment:
       PORT: 8081
+      SERVER_LINK: http://localhost:8080
     links:
       - server
     ports:
@@ -36,7 +37,6 @@ services:
     tty: true
 
   mysql-db:
-    platform: linux/amd64
     image: mysql:5.7
     container_name: mysql-db
     environment:

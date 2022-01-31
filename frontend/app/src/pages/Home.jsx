@@ -108,6 +108,14 @@ export default function Home({ setTitle }){
             method: 'get',
             url: `http://localhost:8080/tasks/${task.id}`
           })
+          const responseEvent =  await axios({
+            headers: {
+              Authorization: `Bearer ${userData.token}`
+            },
+            method: 'get',
+            url: `http://localhost:8080/events/${response.data.EventId}`
+          })
+          response.data.event = responseEvent.data;
           return response.data;
         }
         catch(err){
@@ -174,7 +182,7 @@ export default function Home({ setTitle }){
                 <Typography className={classes.title} component="h2" variant="h5">
                   Your to-do list
                 </Typography>
-                  <TaskTable tasks={ tasksData }/> 
+                  <TaskTable tasks={ tasksData } showEvent={true}/> 
               </CardContent>
             </div>
           </Card>

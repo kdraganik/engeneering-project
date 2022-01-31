@@ -41,7 +41,7 @@ const useStyles = makeStyles({
   }
 });
 
-export default function TaskTable({ tasks, showClosed }) {
+export default function TaskTable({ tasks, showEvent, showClosed }) {
   
   const classes = useStyles();
 
@@ -65,6 +65,16 @@ export default function TaskTable({ tasks, showClosed }) {
         headerName: 'Name',
         flex: 1,
     },
+    ...(
+    showEvent ?
+    [{
+      field: 'event',
+      headerName: 'Event',
+      flex: 1,
+    }]
+    :
+    []
+    ),
     {
       field: 'priority',
       headerName: 'Priority',
@@ -94,7 +104,8 @@ export default function TaskTable({ tasks, showClosed }) {
       status: task.status,
       name: task.name,
       priority: task.priority,
-      date: parsedDate
+      date: parsedDate,
+      ...(task.event && {event: task.event.name})
     }
   }).sort(
     function(a, b) {          
